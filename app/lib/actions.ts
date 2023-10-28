@@ -15,6 +15,7 @@ const InvoiceSchema = z.object({
 
 const CreateInvoice = InvoiceSchema.omit({ id: true, date: true });
 const UpdateInvoice = InvoiceSchema.omit({ date: true });
+const DeleteInvoice = InvoiceSchema.pick({ id: true });
 
 export async function createInvoice(formData: FormData) {
   //  forms that have many fields, use instead the entries() method with Object.fromEntries()
@@ -44,7 +45,6 @@ export async function updateInvoice(formData: FormData) {
     amount: formData.get("amount"),
     status: formData.get("status"),
   });
-
   const amountInCents = amount * 100;
 
   await sql`
@@ -55,4 +55,14 @@ export async function updateInvoice(formData: FormData) {
 
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
+}
+
+export async function deleteInvoice(formData: FormData) {
+  const { id } = DeleteInvoice.parse({
+    id: formData.get("id"),
+  });
+
+  await sql`DELETE FROM invoices WHERE id = ${id}`;
+
+  revalidatePath("/dashboard/invoices");
 }
